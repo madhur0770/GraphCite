@@ -122,6 +122,7 @@ Not covered by automated tests: the Ollama path (needs a local model) and answer
 - Entity matching is lexical (name words in the question); no embeddings, aliases or coreference resolution yet.
 - Matching loads entity names into memory, which is fine for thousands of entities but not millions.
 - Answer quality in live mode depends on the local model; small models may ignore the citation format, which the verifier then flags.
+- Live check performed with Ollama `llama3.2` on the bundled demo documents: the two-hop sample question was answered correctly and both claims verified (word overlap 0.88 and 1.00). Fact extraction varied between runs with this small model, sometimes yielding fewer facts, in which case a question can find nothing to answer from. A larger model was not tested.
 
 ## Project structure
 
