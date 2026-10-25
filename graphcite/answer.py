@@ -17,8 +17,11 @@ SUPPORT_THRESHOLD = 0.5
 _CITATION = re.compile(r"\[(\d+(?:\s*,\s*\d+)*)\]")
 
 ANSWER_PROMPT = """Answer the question using ONLY the numbered evidence below.
-After every statement, cite the evidence number(s) it relies on, like [1] or [2, 3].
-If the evidence does not contain the answer, say that it does not.
+Rules:
+- Write short factual sentences that stay close to the wording of the evidence.
+- End EVERY sentence with the number(s) of the evidence it uses in square brackets, for example: Ana founded Zeta Corp. [2]
+- Do not write phrases such as "as stated in evidence"; give the fact and its [n].
+- If the evidence does not contain the answer, say that it does not.
 
 EVIDENCE:
 {evidence}

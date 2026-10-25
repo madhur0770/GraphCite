@@ -81,7 +81,7 @@ class PipelineTests(unittest.TestCase):
         pipeline.ask(store, llm, "Who founded Aurora Labs?", 1)
         prompt = llm.prompts[0]
         self.assertIn("[1] ", prompt)
-        self.assertIn("cite the evidence number", prompt)
+        self.assertIn("End EVERY sentence with the number(s) of the evidence", prompt)
         self.assertIn("ONLY the numbered evidence", prompt)
 
     def test_ingest_of_unknown_text_with_scripted_model_adds_nothing(self):
