@@ -1,0 +1,4 @@
+# Runtime dependencies. Lower bounds are the versions this project was written against.
+streamlit>=1.37.0
+ollama>=0.1.0
+neo4j>=5.0.0

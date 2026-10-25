@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GraphCite</title>
+<meta name="description" content="Multi-hop question answering over a knowledge graph, with citations verified against source sentences.">
+<style>
+:root{--bg:#fafaf9;--fg:#1c1917;--muted:#57534e;--card:#fff;--line:#e7e5e4;--accent:#2563eb;--code:#f5f5f4}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0f1115;--fg:#e7e5e4;--muted:#a8a29e;--card:#171a21;--line:#292e38;--accent:#7aa2f7;--code:#12151b}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding:48px 16px 64px}
+h1{font-size:2.2rem;margin:0 0 .25rem;letter-spacing:-.02em}
+h2{font-size:1.25rem;margin:2.5rem 0 .75rem}
+.lead{font-size:1.15rem;color:var(--muted);margin:0 0 1.25rem}
+a{color:var(--accent)}
+.btns{display:flex;flex-wrap:wrap;gap:.6rem;margin:1.25rem 0}
+.btn{display:inline-block;padding:.55rem 1rem;border-radius:8px;border:1px solid var(--line);background:var(--card);text-decoration:none;font-weight:600;color:var(--fg)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+pre,code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.9rem}
+pre{background:var(--code);border:1px solid var(--line);border-radius:8px;padding:12px 14px;overflow-x:auto}
+img{max-width:100%;height:auto;border-radius:10px;border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:.95rem;background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+th,td{text-align:left;padding:.5rem .7rem;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;background:var(--code)}
+.table-wrap{overflow-x:auto}
+.note{border-left:3px solid var(--accent);padding:.2rem 1rem;background:var(--card);border-radius:0 8px 8px 0;color:var(--muted)}
+ul{padding-left:1.2rem}
+footer{margin-top:3rem;color:var(--muted);font-size:.9rem}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin:1rem 0}
+.flow span{padding:.45rem .7rem;border:1px solid var(--line);border-radius:8px;background:var(--card);font-size:.9rem}
+.flow i{font-style:normal;color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+  <h1>GraphCite</h1>
+  <p class="lead">Multi-hop question answering over a knowledge graph, with citations that are checked rather than trusted.</p>
+  <p>Documents become a Neo4j knowledge graph; questions are answered by walking the graph across documents; every statement in the answer is then verified against the numbered source sentences it cites. By Madhur Kumar Rana.</p>
+  <div class="btns">
+    <a class="btn primary" href="https://github.com/madhur0770/GraphCite">View on GitHub</a>
+    <a class="btn" href="https://github.com/madhur0770/GraphCite/actions/workflows/ci.yml">CI status</a>
+    <a class="btn" href="https://github.com/madhur0770/GraphCite/blob/main/docs/architecture.md">Architecture</a>
+  </div>
+  <p class="note">This page is a showcase. The full app needs Neo4j and a local Ollama model; a no-services demo mode (scripted stand-in model, bundled fictional documents) runs with <code>python -m graphcite.demo</code> or <code>streamlit run app.py</code>.</p>
+
+  <h2>The interface</h2>
+  <p>Demo mode, answering a two-hop question. Every claim in the answer is checked against the numbered source sentence it cites.</p>
+  <img src="assets/ui-answer.png" alt="GraphCite interface showing an answer with 100% of claims supported by their citations" width="960" height="965" loading="lazy">
+
+  <h2>The idea</h2>
+  <p>Some questions span documents: <em>"Which company did the founder of Aurora Labs work for before, and what did that company acquire?"</em> needs a chain of facts from three sources. GraphCite merges entities across documents and expands from the entities named in the question, so each hop carries the sentence it came from.</p>
+  <img src="assets/demo-graph.png" alt="Knowledge graph of the bundled demo documents: Aurora Labs, Maria Santos, Volta Systems, Ionex and related entities" width="1536" height="590">
+  <p style="color:var(--muted);font-size:.9rem">Graph built from three fictional demo documents.</p>
+
+  <h2>What makes the citations verifiable</h2>
+  <ul>
+    <li><strong>Grounded extraction:</strong> the model must quote the supporting sentence for every entity and relation; ungrounded items are dropped and reported.</li>
+    <li><strong>Provenance on every edge:</strong> each relation stores its source document and sentence.</li>
+    <li><strong>Post-hoc verification:</strong> each answer sentence must cite existing evidence, and the cited text is checked for word-level support. Uncited, mis-numbered and unsupported statements are flagged.</li>
+  </ul>
+
+  <h2>Run it</h2>
+<pre><code>git clone https://github.com/madhur0770/GraphCite.git
+cd GraphCite
+python -m graphcite.demo        # no dependencies, no services
+pip install -r requirements.txt
+streamlit run app.py            # demo mode by default</code></pre>
+  <p>Live mode: <code>docker compose up --build</code> starts the app and Neo4j; point it at a local Ollama model.</p>
+
+  <h2>Engineering evidence</h2>
+  <ul>
+    <li>67 tests: extraction grounding, store contract, retrieval, citation verification, pipeline, UI smoke, repository hygiene.</li>
+    <li>The same store contract tests run against the in-memory store and a real Neo4j in CI.</li>
+    <li>CI on Ubuntu and Windows, plus Compose validation and a Docker image build.</li>
+  </ul>
+
+  <h2>Known limitations</h2>
+  <ul>
+    <li>Matching and verification are lexical: no embeddings, no entailment, no coreference resolution.</li>
+    <li>The Ollama path and real-model answer quality are not covered by automated tests.</li>
+    <li>Demo mode uses a scripted stand-in for the model and only knows the bundled documents.</li>
+  </ul>
+
+  <footer>&copy; 2026 Madhur Kumar Rana &middot; <a href="https://github.com/madhur0770/GraphCite">Source</a></footer>
+</main>
+</body>
+</html>
