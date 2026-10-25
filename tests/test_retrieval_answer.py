@@ -64,6 +64,11 @@ class VerifyTests(unittest.TestCase):
     def test_uncited_claim(self):
         self.assertEqual(self.status("Maria Santos founded Aurora Labs in 2018."), [("uncited", [])])
 
+    def test_citation_after_full_stop_stays_with_its_sentence(self):
+        text = "Maria Santos founded Aurora Labs in 2018. [1]\nMaria Santos led the power electronics team at Volta Systems. [2]"
+        claims = verify(text, ITEMS)
+        self.assertEqual([(c.status, c.refs) for c in claims], [("supported", [1]), ("supported", [2])])
+
     def test_invalid_citation_number(self):
         self.assertEqual(self.status("Maria Santos founded Aurora Labs in 2018 [7]."), [("invalid-citation", [7])])
 

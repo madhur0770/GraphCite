@@ -15,6 +15,7 @@ from .text import containment, split_sentences, tokenize
 
 SUPPORT_THRESHOLD = 0.5
 _CITATION = re.compile(r"\[(\d+(?:\s*,\s*\d+)*)\]")
+_CITATION_AFTER_STOP = re.compile(r"([.!?])\s*(\[\d+(?:\s*,\s*\d+)*\])")
 
 ANSWER_PROMPT = """Answer the question using ONLY the numbered evidence below.
 Rules:
@@ -49,6 +50,9 @@ def parse_refs(sentence: str) -> list[int]:
 def verify(answer_text: str, items: list[EvidenceItem]) -> list[Claim]:
     by_ref = {item.ref: item for item in items}
     claims: list[Claim] = []
+    # Models often put the citation after the full stop ("Fact. [1] Next fact. [2]"); move it in front of
+    # the stop so that each sentence keeps its own citation when the text is split.
+    answer_text = _CITATION_AFTER_STOP.sub(r" \2\1", answer_text)
     for sentence in split_sentences(answer_text):
         bare = re.sub(r"\s+([.,;:!?])", r"\1", _CITATION.sub("", sentence)).strip()
         if len(tokenize(bare)) < 3:
